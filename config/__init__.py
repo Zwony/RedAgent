@@ -1,0 +1,4 @@
+"""Configuration module for RedAgent."""
+from config.settings import settings
+
+__all__ = ["settings"]

@@ -1,0 +1,50 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "redagent"
+version = "0.1.0"
+description = "AI Agent Security & Automated Red Teaming Platform"
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "Apache-2.0" }
+authors = [
+    { name = "RedAgent Architecture Team" }
+]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Topic :: Security",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+dependencies = [
+    "pydantic>=2.7.0",
+    "pydantic-settings>=2.2.0",
+    "langgraph>=0.2.0",
+    "langchain>=0.2.0",
+    "langchain-core>=0.2.0",
+    "litellm>=1.40.0",
+    "httpx>=0.27.0",
+    "redis>=5.0.0",
+    "chromadb>=0.5.0",
+    "rich>=13.7.0",
+    "python-dotenv>=1.0.1",
+    "structlog>=24.1.0"
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.2.0",
+    "pytest-asyncio>=0.23.0",
+    "black>=24.4.0",
+    "isort>=5.13.0",
+    "mypy>=1.10.0"
+]
+
+[project.scripts]
+redagent = "redagent.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["redagent*", "config*"]
