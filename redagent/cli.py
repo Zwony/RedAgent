@@ -37,7 +37,8 @@ def print_banner():
         console.print(
             Panel.fit(
                 f"[bold red]REDAGENT[/bold red] [white]v{__version__}[/white] - [bold white]Automated AI Agent Red Teaming Platform[/bold white]\n"
-                "[cyan]Stateful Multi-Agent Security Auditing Engine (OWASP Top 10 for LLM)[/cyan]",
+                "[cyan]Stateful Multi-Agent Security Auditing Engine (OWASP Top 10 for LLM)[/cyan]\n"
+                "[dim]Notice: Intended for authorized security auditing & research. Operator assumes all legal responsibility.[/dim]",
                 border_style="red",
             )
         )
@@ -45,6 +46,7 @@ def print_banner():
         print("=" * 70)
         print(f"REDAGENT v{__version__} - Automated AI Agent Red Teaming Platform")
         print("Stateful Multi-Agent Security Auditing Engine (OWASP Top 10 for LLM)")
+        print("Notice: Intended for authorized security auditing & research. Operator assumes all legal responsibility.")
         print("=" * 70)
 
 
@@ -133,15 +135,8 @@ def cmd_scan(args: argparse.Namespace):
 
     target = TargetInfo.model_validate(data)
 
-    # Authorization enforcement for live remote endpoints
-    if target.endpoint_url and not args.authorized:
-        console.print(
-            "\n[bold red][!] AUTHORIZATION REQUIRED:[/bold red] "
-            f"Target '{target.name}' specifies a live remote endpoint ({target.endpoint_url}).\n"
-            "Testing systems without prior explicit written permission is strictly prohibited by law.\n"
-            "To confirm that you have valid authorization to audit this system, re-run with: [bold cyan]--authorized[/bold cyan]\n"
-        )
-        sys.exit(1)
+    if target.endpoint_url:
+        console.print(f"[dim]Live target configured: {target.endpoint_url}[/dim]")
 
     console.print(f"[bold yellow]=> Loaded Target Profile:[/bold yellow] {target.name} ({target.target_id})")
     asyncio.run(run_scan_async(target, args.output))
