@@ -21,7 +21,7 @@ All contributors and maintainers are expected to adhere to our [Code of Conduct]
 ### Initializing Environment
 1. Fork the repository on GitHub and clone your fork locally:
    ```bash
-   git clone https://github.com/your-username/RedAgent.git
+   git clone https://github.com/Zwony/RedAgent.git
    cd RedAgent
    ```
 

@@ -90,7 +90,7 @@ graph TD
 Clone the repository and install in editable mode:
 
 ```bash
-git clone https://github.com/your-org/RedAgent.git
+git clone https://github.com/Zwony/RedAgent.git
 cd RedAgent
 
 # Create and activate virtual environment

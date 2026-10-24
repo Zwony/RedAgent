@@ -19,12 +19,9 @@ If you discover a potential security vulnerability within RedAgent (such as an u
 
 **Please do NOT report security vulnerabilities through public GitHub issues or discussions.**
 
-Instead, please report security issues through one of the following private channels:
-
-1. **GitHub Private Vulnerability Reporting:**  
-   Navigate to the repository's **Security** tab, click on **Advisories**, and select **Report a vulnerability**. This allows secure, private collaboration with the maintainers.
-2. **Security Team Contact:**  
-   Send an encrypted email to `security@redagent-project.org` with the subject line `[SECURITY] Potential Vulnerability in RedAgent`.
+Instead, please report security issues through:
+* **GitHub Security Advisories (Private Vulnerability Reporting):**  
+  Navigate to the repository's **Security** tab, click on **Advisories**, and select **Report a vulnerability**. This allows secure, private, and encrypted communication directly with the maintainers without exposing vulnerability details publicly.
 
 ### What to Include in Your Report
 
