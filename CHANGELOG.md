@@ -22,7 +22,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `BaseTargetConnector`: Standardized asynchronous adapter interface.
   - `RestTargetConnector`: Live HTTP/JSON agent endpoint communication.
   - `MockTargetConnector`: Sandboxed enterprise banking assistant with layered guardrail simulation.
-- **Vector Knowledge Store:** Persistent ChromaDB integration with automatic in-memory fallback for indexing OWASP benchmark vectors.
-- **Command Line Interface (CLI):** `redagent` CLI supporting `scan`, `demo`, and `version` subcommands with mandatory authorization verification flags (`--authorized`).
+- **Vector Knowledge Store:** Persistent ChromaDB integration with automatic in-memory fallback, seeded with expanded benchmark vectors (SSRF redirection, SQL parameter injection, obfuscated base64 extraction, and goal hijacking).
+- **Command Line Interface (CLI):** `redagent` CLI with retro ASCII art banner supporting `init` (profile scaffolding), `scan` (with `--output report.md` or `report.json`), `demo`, and `version` subcommands.
+- **Executive Reporting:** Dual-format audit report generation supporting structured JSON and CISO-ready Markdown format with CVSS metrics and remediation tables.
 - **Developer Experience (DX):** Full Python SDK support for direct programmatic invocation in CI/CD pipelines.
 - **Test Suite:** Comprehensive unit and integration test coverage across all components with 100% pass rate.

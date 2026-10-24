@@ -46,3 +46,87 @@ class AuditReport(BaseModel):
     
     audit_duration_seconds: float = Field(default=0.0)
     metadata: Dict[str, Any] = Field(default_factory=dict)
+
+    def to_markdown(self) -> str:
+        """Render audit report as an executive-ready Markdown document."""
+        lines: List[str] = [
+            f"# RedAgent Security Audit Report: {self.target_name}",
+            "",
+            f"**Report ID:** `{self.report_id}`  ",
+            f"**Target System:** `{self.target_name}` (`{self.target_id}`)  ",
+            f"**Audit Date:** `{self.generated_at.strftime('%Y-%m-%d %H:%M:%S UTC')}`  ",
+            f"**Overall Posture Rating:** **{self.overall_rating.value}**  ",
+            f"**Maximum Risk Score:** **{self.overall_risk_score:.1f} / 10.0**  ",
+            "",
+            "---",
+            "",
+            "## 1. Executive Summary",
+            "",
+            self.executive_summary or f"Automated red teaming assessment conducted across {self.total_tests_executed} tests, identifying {self.vulnerabilities_found} security findings.",
+            "",
+            "---",
+            "",
+            "## 2. Posture & Metrics Summary",
+            "",
+            "| Metric | Value |",
+            "| :--- | :--- |",
+            f"| Overall Rating | **{self.overall_rating.value}** |",
+            f"| Maximum Risk Score | **{self.overall_risk_score:.1f} / 10.0** |",
+            f"| Total Tests Executed | {self.total_tests_executed} |",
+            f"| Total Findings Detected | {self.vulnerabilities_found} |",
+            f"| Audit Duration | {self.audit_duration_seconds:.2f}s |",
+            "",
+            "### Severity Distribution",
+            "",
+            "| Severity Level | Count |",
+            "| :--- | :--- |",
+        ]
+
+        for sev, count in self.severity_breakdown.items():
+            lines.append(f"| {sev.value if hasattr(sev, 'value') else sev} | {count} |")
+
+        lines.extend([
+            "",
+            "---",
+            "",
+            "## 3. Vulnerability Findings",
+            "",
+            "| Finding ID | Category | Severity | Status | Recommendation |",
+            "| :--- | :--- | :--- | :--- | :--- |",
+        ])
+
+        if not self.findings:
+            lines.append("| - | - | - | - | No vulnerabilities identified. |")
+        else:
+            for f in self.findings:
+                cat_val = f.category.value if hasattr(f.category, 'value') else str(f.category)
+                sev_val = f.severity.value if hasattr(f.severity, 'value') else str(f.severity)
+                stat_val = f.status.value if hasattr(f.status, 'value') else str(f.status)
+                rem_short = f.remediation_suggestion.replace("\n", " ")[:80] + ("..." if len(f.remediation_suggestion) > 80 else "")
+                lines.append(f"| `{f.finding_id}` | {cat_val} | **{sev_val}** | `{stat_val}` | {rem_short} |")
+
+        lines.extend([
+            "",
+            "---",
+            "",
+            "## 4. Hardening & Remediation Roadmap",
+            "",
+            "| Priority | Target Component | Actionable Recommendation | Mitigation Rule / Example |",
+            "| :--- | :--- | :--- | :--- |",
+        ])
+
+        if not self.remediation_roadmap:
+            lines.append("| - | System | Maintain current defensive posture. | - |")
+        else:
+            for r in self.remediation_roadmap:
+                mitigation = f"`{r.example_mitigation}`" if r.example_mitigation else "Standard RBAC / Input Validation"
+                lines.append(f"| P{r.priority} | **{r.target_component}** | {r.recommendation} | {mitigation} |")
+
+        lines.extend([
+            "",
+            "---",
+            "*Report generated automatically by RedAgent - Enterprise Automated AI Agent Red Teaming Platform.*",
+            "",
+        ])
+
+        return "\n".join(lines)

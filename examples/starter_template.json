@@ -1,0 +1,53 @@
+{
+  "target_id": "target_agent_01",
+  "name": "Enterprise Assistant",
+  "description": "Production customer query and operational assistant",
+  "endpoint_type": "rest_api",
+  "endpoint_url": "https://api.example.com/v1/chat",
+  "auth_headers": {
+    "Authorization": "Bearer YOUR_API_TOKEN_HERE"
+  },
+  "request_template": {
+    "prompt": "{{prompt}}"
+  },
+  "has_rag": true,
+  "rag_sources": [
+    "knowledge_base_faq",
+    "internal_policy_docs"
+  ],
+  "accessible_tools": [
+    {
+      "name": "query_order_status",
+      "description": "Fetch customer order details given order_id",
+      "parameters": [
+        {
+          "name": "order_id",
+          "param_type": "string",
+          "description": "Customer order number",
+          "is_required": true
+        }
+      ],
+      "is_sensitive": false
+    },
+    {
+      "name": "refund_transaction",
+      "description": "Initiate financial refund transaction",
+      "parameters": [
+        {
+          "name": "transaction_id",
+          "param_type": "string",
+          "description": "Transaction identifier",
+          "is_required": true
+        },
+        {
+          "name": "amount",
+          "param_type": "float",
+          "description": "Refund amount",
+          "is_required": true
+        }
+      ],
+      "is_sensitive": true,
+      "risk_notes": "Financial state mutation capability"
+    }
+  ]
+}

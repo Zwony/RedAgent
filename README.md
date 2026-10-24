@@ -120,18 +120,27 @@ DEFAULT_ATTACKER_MODEL=gpt-4o
 
 ## CLI Usage
 
-### 1. Run the Interactive Sandbox Demo
+### 1. Scaffold a New Target Agent Profile
+Generate a starter configuration file with customizable tools and RAG settings:
+```bash
+redagent init --output target.json --name "CustomerServiceAgent"
+```
+
+### 2. Run Security Audit on an AI Agent Profile
+Execute the stateful multi-agent DAG against your target and export an executive Markdown report:
+```bash
+redagent scan --target target.json --output audit_report.md
+```
+Or export as structured JSON:
+```bash
+redagent scan --target target.json --output report.json
+```
+
+### 3. Run the Interactive Sandbox Demo
 Experience the multi-agent refinement loop against a simulated banking assistant:
 ```bash
 redagent demo
 ```
-
-### 2. Run Security Audit on an AI Agent JSON Profile
-```bash
-redagent scan --target examples/target_customer_support.json --output report.json --authorized
-```
-
-> **Note:** The `--authorized` flag certifies that you own the target system or hold explicit authorization to conduct security testing.
 
 ---
 
