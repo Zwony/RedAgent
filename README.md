@@ -1,5 +1,7 @@
 <div align="center">
 
+<img src="assets/redagent_banner.jpg" alt="RedAgent Banner" width="100%" />
+
 # RedAgent
 ### Autonomous AI Agent Red Teaming & Security Auditing Platform
 **Stateful Multi-Agent Vulnerability Assessment Engine for Enterprise LLM Systems**
