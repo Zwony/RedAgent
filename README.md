@@ -11,7 +11,7 @@
 [![Framework: LangGraph](https://img.shields.io/badge/Orchestration-LangGraph-FF4B4B.svg)](https://github.com/langchain-ai/langgraph)
 [![CI](https://github.com/Zwony/RedAgent/actions/workflows/ci.yml/badge.svg)](https://github.com/Zwony/RedAgent/actions/workflows/ci.yml)
 [![Security: OWASP LLM Top 10](https://img.shields.io/badge/Standard-OWASP_LLM_Top_10-red.svg)](https://owasp.org/www-project-top-10-for-large-language-model-applications/)
-[![XERJ Hub](https://img.shields.io/badge/XERJ_Hub-Selected_Corpus-8A2BE2.svg)](https://hub.xerj.org/corpus/Zwony/redagent)
+[![XERJ Corpus Hub katkıda bulunanlar](https://hub.xerj.org/contributors/Zwony/badge.svg)](https://hub.xerj.org/contributors/Zwony)
 [![GitHub Stars](https://img.shields.io/github/stars/Zwony/RedAgent?style=flat&color=gold)](https://github.com/Zwony/RedAgent/stargazers)
 [![GitHub Forks](https://img.shields.io/github/forks/Zwony/RedAgent?style=flat&color=gray)](https://github.com/Zwony/RedAgent/network/members)
 [![GitHub Issues](https://img.shields.io/github/issues/Zwony/RedAgent)](https://github.com/Zwony/RedAgent/issues)
