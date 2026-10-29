@@ -9,8 +9,13 @@
 [![License: Apache-2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
 [![Python: 3.11+](https://img.shields.io/badge/Python-3.11%2B-3776AB.svg?logo=python&logoColor=white)](pyproject.toml)
 [![Framework: LangGraph](https://img.shields.io/badge/Orchestration-LangGraph-FF4B4B.svg)](https://github.com/langchain-ai/langgraph)
-[![Tests: Passing](https://img.shields.io/badge/Tests-6%2F6%20Passed-brightgreen.svg)](tests/)
+[![CI](https://github.com/Zwony/RedAgent/actions/workflows/ci.yml/badge.svg)](https://github.com/Zwony/RedAgent/actions/workflows/ci.yml)
 [![Security: OWASP LLM Top 10](https://img.shields.io/badge/Standard-OWASP_LLM_Top_10-red.svg)](https://owasp.org/www-project-top-10-for-large-language-model-applications/)
+[![XERJ Hub](https://img.shields.io/badge/XERJ_Hub-Selected_Corpus-8A2BE2.svg)](https://hub.xerj.org/corpus/Zwony/redagent)
+[![GitHub Stars](https://img.shields.io/github/stars/Zwony/RedAgent?style=flat&color=gold)](https://github.com/Zwony/RedAgent/stargazers)
+[![GitHub Forks](https://img.shields.io/github/forks/Zwony/RedAgent?style=flat&color=gray)](https://github.com/Zwony/RedAgent/network/members)
+[![GitHub Issues](https://img.shields.io/github/issues/Zwony/RedAgent)](https://github.com/Zwony/RedAgent/issues)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 
 [Features](#key-features) • [Architecture](#system-architecture) • [Quickstart](#quickstart--installation) • [CLI Usage](#cli-usage) • [SDK Usage](#python-sdk--cicd-integration) • [Legal Notice](#legal-disclaimer--authorized-use-policy)
 
