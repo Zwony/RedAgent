@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "redagent"
-version = "0.1.0"
+version = "0.2.0"
 description = "AI Agent Security & Automated Red Teaming Platform"
 readme = "README.md"
 requires-python = ">=3.11"
@@ -34,12 +34,20 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+ui = [
+    "streamlit>=1.35.0"
+]
 dev = [
     "pytest>=8.2.0",
     "pytest-asyncio>=0.23.0",
     "black>=24.4.0",
     "isort>=5.13.0",
     "mypy>=1.10.0"
+]
+all = [
+    "streamlit>=1.35.0",
+    "pytest>=8.2.0",
+    "pytest-asyncio>=0.23.0"
 ]
 
 [project.scripts]

@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.2.0] - 2026-10-31
+
+### Added
+- **Interactive Web UI Dashboard (`redagent ui`):** Full-featured Streamlit visual command center providing live target profiling, real-time multi-agent activity streams, metric summary cards, and one-click report downloads.
+- **In-Memory Callable Connector (`CallableTargetConnector`):** Direct test adapter for evaluating local Python functions, coroutines, and LangChain Runnable chains with zero server setup.
+- **Standalone Executive HTML Reports (`--format html`):** Air-gapped, single-file HTML security audit reports featuring responsive dark cybersecurity styling, vulnerability cards, and remediation roadmaps.
+- **Automatic Release Updater (`redagent update`):** PyPI and GitHub release discovery with 24-hour TTL caching, non-blocking CI/CD checks, and an interactive upgrade confirmation prompt in terminal sessions.
+- **Optional Dependencies in Packaging:** Added `redagent[ui]` optional dependencies group in `pyproject.toml` for lightweight core installation.
+
+### Changed
+- **Performance & Cold-Start Optimization:** Implemented lazy LiteLLM loading and cached vector store seed checks, eliminating startup delays and network timeouts in offline environments.
+- **Documentation Standards:** Refactored docstrings across all modules to strictly comply with the Google Python Style Guide.
+
+### Fixed
+- Resolved IDE missing-module warnings for optional dependencies using dynamic specification lookups.
+
+---
+
 ## [0.1.0] - 2026-10-24
 
 ### Added

@@ -130,3 +130,8 @@ class AuditReport(BaseModel):
         ])
 
         return "\n".join(lines)
+
+    def to_html(self) -> str:
+        """Render audit report as a self-contained, interactive HTML document."""
+        from redagent.core.report_html import render_html_report
+        return render_html_report(self)

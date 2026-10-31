@@ -12,6 +12,7 @@ class EndpointType(str, Enum):
     LANGCHAIN_AGENT = "langchain_agent"
     CREWAI_AGENT = "crewai_agent"
     CUSTOM_SDK = "custom_sdk"
+    CALLABLE = "callable"
 
 
 class TargetToolParameter(BaseModel):

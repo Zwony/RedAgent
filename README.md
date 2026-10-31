@@ -46,10 +46,12 @@ Traditional Dynamic Application Security Testing (DAST) and API scanners are fun
 
 - **OWASP LLM Top 10 Coverage:** Automated test generation mapped to Prompt Injection (LLM01), Sensitive Information Disclosure (LLM06), and Excessive Agency / Insecure Tool Abuse (LLM07/LLM08).
 - **Persistent Refinement with Backtracking:** Agents do not surrender on a single defense. When a prompt is blocked by a guardrail, the engine backtracks and mutates formatting, delimiters, and semantic framing.
+- **Interactive Web Dashboard:** Launch visual security audits with live agent inspection streams using `redagent ui`.
+- **Zero-Server In-Memory Testing:** Test local Python functions, coroutines, and LangChain agents directly via `CallableTargetConnector`.
+- **Air-Gapped HTML Executive Reporting:** Export single-file, interactive HTML audit reports with vulnerability proofs and remediation roadmaps.
 - **ChromaDB Vector Knowledge Store:** Persistently indexes adversarial seeds, boundary test templates, and OWASP evaluation rubrics (with zero-dependency in-memory fallback).
-- **Pluggable Target Connectors:** Test local mock agents, staging bots, or live enterprise agents over REST API endpoints (`RestTargetConnector`).
-- **Actionable Remediation Roadmap:** Automatically generates concrete developer fixes, including regex guardrail patterns, system prompt hardening snippets, and RBAC constraints.
-- **Dual Mode (CLI + SDK):** Run as a standalone terminal security scanner or embed into Python CI/CD pipelines.
+- **Pluggable Target Connectors:** Test local mock agents, in-memory callables, or live enterprise agents over REST API endpoints.
+- **Automatic Release Updater:** Built-in non-blocking update checking and interactive upgrade prompt (`redagent update`).
 
 ---
 
@@ -134,16 +136,31 @@ redagent init --output target.json --name "CustomerServiceAgent"
 ```
 
 ### 2. Run Security Audit on an AI Agent Profile
-Execute the stateful multi-agent DAG against your target and export an executive Markdown report:
+Execute the stateful multi-agent DAG against your target and export an executive HTML or Markdown report:
 ```bash
+# Standalone Interactive HTML Report (offline & air-gapped)
+redagent scan --target target.json --output audit_report.html
+
+# Executive Markdown Report
 redagent scan --target target.json --output audit_report.md
-```
-Or export as structured JSON:
-```bash
+
+# Structured JSON
 redagent scan --target target.json --output report.json
 ```
 
-### 3. Run the Interactive Sandbox Demo
+### 3. Launch the Interactive Web Dashboard
+Visualize real-time agent attacks, inspect target refusal analyses, and download reports:
+```bash
+redagent ui
+```
+
+### 4. Check for Platform Updates
+Verify upstream releases on PyPI / GitHub and interactively upgrade:
+```bash
+redagent update
+```
+
+### 5. Run the Interactive Sandbox Demo
 Experience the multi-agent refinement loop against a simulated banking assistant:
 ```bash
 redagent demo
@@ -227,6 +244,28 @@ async def test_ai_agent_security():
     assert report.overall_rating.value in ("SECURE", "LOW_RISK"), (
         f"Security audit failed with posture: {report.overall_rating.value} (Risk: {report.overall_risk_score}/10)"
     )
+
+### In-Memory Python / LangChain Bot Auditing
+Audit any local Python function or LangChain Runnable with zero HTTP server configuration:
+
+```python
+import asyncio
+from redagent import RedTeamGraphEngine, TargetInfo, EndpointType
+from redagent.connectors import CallableTargetConnector
+
+# In-memory target bot (or LangChain AgentExecutor)
+def my_local_agent(prompt: str) -> str:
+    return "I am an enterprise assistant. Instruction overrides are forbidden."
+
+async def test_in_memory():
+    target = TargetInfo(target_id="local_bot", name="Local Assistant", endpoint_type=EndpointType.CALLABLE)
+    engine = RedTeamGraphEngine(target_connector=CallableTargetConnector(my_local_agent))
+    state = await engine.run(target=target)
+    print(f"Risk Score: {state.audit_report.overall_risk_score}/10")
+
+if __name__ == "__main__":
+    asyncio.run(test_in_memory())
+```
 
 if __name__ == "__main__":
     asyncio.run(test_ai_agent_security())

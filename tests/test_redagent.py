@@ -123,3 +123,89 @@ def test_end_to_end_graph_execution():
     assert len(final_state.findings) > 0
     assert final_state.audit_report is not None
     assert final_state.audit_report.target_id == "unit_test_target"
+
+
+def test_callable_target_connector():
+    """Verify CallableTargetConnector parses sync, async, and dict results."""
+    from redagent.connectors.callable import CallableTargetConnector
+
+    target = TargetInfo(target_id="test_target", name="Test Target")
+
+    # 1. Synchronous lambda
+    sync_conn = CallableTargetConnector(lambda p: f"Echo: {p}")
+    resp_sync = asyncio.run(sync_conn.send("payload", target))
+    assert resp_sync.status_code == 200
+    assert resp_sync.content == "Echo: payload"
+    assert resp_sync.latency_ms >= 0.0
+
+    # 2. Asynchronous coroutine
+    async def async_bot(prompt: str) -> str:
+        return f"Async: {prompt}"
+
+    async_conn = CallableTargetConnector(async_bot)
+    resp_async = asyncio.run(async_conn.send("probe", target))
+    assert resp_async.status_code == 200
+    assert resp_async.content == "Async: probe"
+
+    # 3. Structured dictionary response with tool calls
+    def dict_bot(prompt: str) -> dict:
+        return {
+            "output": "Processed query",
+            "tool_calls": [{"name": "db_query", "args": {"id": 123}}],
+        }
+
+    dict_conn = CallableTargetConnector(dict_bot)
+    resp_dict = asyncio.run(dict_conn.send("sql probe", target))
+    assert resp_dict.status_code == 200
+    assert resp_dict.content == "Processed query"
+    assert len(resp_dict.tool_calls) == 1
+    assert resp_dict.tool_calls[0]["name"] == "db_query"
+
+
+def test_html_report_export():
+    """Verify HTML executive report generator produces valid single-file document."""
+    target = TargetInfo(target_id="report_test", name="HTML Report Target")
+    engine = RedTeamGraphEngine()
+    final_state = asyncio.run(engine.run(target=target))
+    assert final_state.audit_report is not None
+
+    html_content = final_state.audit_report.to_html()
+    assert "<!DOCTYPE html>" in html_content
+    assert "HTML Report Target" in html_content
+    assert "Overall Posture" in html_content
+    assert "Remediation Roadmap" in html_content
+
+
+def test_end_to_end_with_callable_connector():
+    """Verify RedTeamGraphEngine runs with explicit CallableTargetConnector."""
+    from redagent.connectors.callable import CallableTargetConnector
+
+    target = TargetInfo(
+        target_id="callable_agent",
+        name="Callable In-Memory Agent",
+        endpoint_type=EndpointType.CALLABLE,
+    )
+    connector = CallableTargetConnector(
+        lambda prompt: "I am a secure corporate assistant. Instruction override rejected."
+    )
+    engine = RedTeamGraphEngine(target_connector=connector)
+    final_state = asyncio.run(engine.run(target=target))
+
+    assert final_state.is_completed is True
+    assert final_state.audit_report is not None
+    assert final_state.audit_report.target_name == "Callable In-Memory Agent"
+
+
+def test_updater_version_comparison():
+    """Verify version parsing and update comparison logic."""
+    from redagent.core.updater import _parse_version, is_newer_version
+
+    assert _parse_version("0.1.0") == (0, 1, 0)
+    assert _parse_version("v0.2.0") == (0, 2, 0)
+    assert _parse_version("1.0.0-rc1") == (1, 0, 0)
+
+    assert is_newer_version("0.1.0", "0.2.0") is True
+    assert is_newer_version("0.1.0", "0.1.1") is True
+    assert is_newer_version("0.2.0", "0.1.0") is False
+    assert is_newer_version("0.1.0", "0.1.0") is False
+    assert is_newer_version("1.0.0", "0.9.9") is False

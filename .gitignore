@@ -29,6 +29,8 @@ MANIFEST
 # Audit outputs (may contain sensitive findings)
 audit_report*.md
 *_report.md
+audit_report*.html
+*_report.html
 
 venv/
 .venv/

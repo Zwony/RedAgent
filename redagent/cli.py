@@ -1,6 +1,7 @@
 """Command Line Interface (CLI) for RedAgent platform."""
 import argparse
 import asyncio
+import importlib.util
 import json
 import os
 import sys
@@ -42,7 +43,8 @@ BANNER_ART = r"""
 """
 
 
-def print_banner():
+def print_banner() -> None:
+    """Renders the ASCII banner and compliance disclaimer to the console."""
     if HAS_RICH:
         console.print(f"[bold red]{BANNER_ART}[/bold red]")
         console.print(
@@ -61,7 +63,12 @@ def print_banner():
         print("=" * 70)
 
 
-def display_report(final_state: RedTeamState):
+def display_report(final_state: RedTeamState) -> None:
+    """Formats and prints executive audit posture and findings to the console.
+
+    Args:
+        final_state: Graph state containing evaluated findings and metrics.
+    """
     report = final_state.audit_report
     if not report:
         console.print("[bold red]Audit did not produce a report.[/bold red]")
@@ -126,15 +133,35 @@ async def run_scan_async(
     output_path: Optional[str] = None,
     report_format: str = "auto",
 ) -> RedTeamState:
+    """Executes the red team DAG and exports audit reports.
+
+    Args:
+        target: Target AI agent profile and boundary specifications.
+        output_path: Optional destination filesystem path for export.
+        report_format: Export format ('auto', 'json', 'markdown', or 'html').
+
+    Returns:
+        RedTeamState: Completed state containing audit reports and logs.
+    """
     engine = RedTeamGraphEngine()
     final_state = await engine.run(target=target)
     display_report(final_state)
 
     if output_path and final_state.audit_report:
-        is_md = report_format == "markdown" or (
-            report_format == "auto" and output_path.lower().endswith(".md")
+        out_lower = output_path.lower()
+        is_html = report_format == "html" or (
+            report_format == "auto" and out_lower.endswith(".html")
         )
-        if is_md:
+        is_md = report_format == "markdown" or (
+            report_format == "auto" and (out_lower.endswith(".md") or out_lower.endswith(".markdown"))
+        )
+
+        if is_html:
+            html_content = final_state.audit_report.to_html()
+            with open(output_path, "w", encoding="utf-8") as f:
+                f.write(html_content)
+            console.print(f"[bold green][OK] Standalone HTML audit report exported to: {output_path}[/bold green]\n")
+        elif is_md:
             md_content = final_state.audit_report.to_markdown()
             with open(output_path, "w", encoding="utf-8") as f:
                 f.write(md_content)
@@ -148,7 +175,12 @@ async def run_scan_async(
     return final_state
 
 
-def cmd_scan(args: argparse.Namespace):
+def cmd_scan(args: argparse.Namespace) -> None:
+    """Dispatches a full security audit against the configured target profile.
+
+    Args:
+        args: Parsed command line arguments from the scan parser.
+    """
     print_banner()
     if not os.path.exists(args.target):
         console.print(f"[bold red]Error: Target config file not found: {args.target}[/bold red]")
@@ -166,8 +198,12 @@ def cmd_scan(args: argparse.Namespace):
     asyncio.run(run_scan_async(target, args.output, getattr(args, "format", "auto")))
 
 
-def cmd_init(args: argparse.Namespace):
-    """Scaffold a new target AI agent JSON configuration file."""
+def cmd_init(args: argparse.Namespace) -> None:
+    """Scaffolds a new starter target AI agent configuration file.
+
+    Args:
+        args: Parsed command line arguments specifying target name and output path.
+    """
     output_path = args.output or "target.json"
     if os.path.exists(output_path) and not args.force:
         console.print(f"[bold red]Error: '{output_path}' already exists. Use --force to overwrite.[/bold red]")
@@ -235,16 +271,85 @@ def cmd_init(args: argparse.Namespace):
     console.print(f"[dim]Run security audit with: redagent scan --target {output_path} -o audit_report.md[/dim]\n")
 
 
-def cmd_demo(args: argparse.Namespace):
+def cmd_demo(args: argparse.Namespace) -> None:
+    """Executes the pre-configured mock banking assistant sandbox demo.
+
+    Args:
+        args: Parsed command line arguments.
+    """
     from main import main as run_demo_main
     asyncio.run(run_demo_main())
 
 
-def cmd_version(args: argparse.Namespace):
+def cmd_ui(args: argparse.Namespace) -> None:
+    """Launches the interactive Streamlit security dashboard.
+
+    Args:
+        args: Parsed command line arguments specifying host and port bindings.
+    """
+    if importlib.util.find_spec("streamlit") is None:
+        console.print("[bold red]Streamlit is not installed.[/bold red]")
+        console.print(
+            "Please install it using: [bold green]pip install \"redagent[ui]\"[/bold green] "
+            "or [bold green]pip install streamlit[/bold green]"
+        )
+        sys.exit(1)
+
+    import subprocess
+    ui_script = os.path.join(os.path.dirname(__file__), "ui", "app.py")
+    port = str(getattr(args, "port", 8501))
+    host = str(getattr(args, "host", "localhost"))
+    console.print(f"[bold green]Starting RedAgent Web Dashboard at http://{host}:{port}...[/bold green]")
+    cmd = [
+        sys.executable,
+        "-m",
+        "streamlit",
+        "run",
+        ui_script,
+        f"--server.port={port}",
+        f"--server.address={host}",
+        "--server.headless=true",
+        "--browser.gatherUsageStats=false",
+    ]
+    try:
+        subprocess.run(cmd)
+    except KeyboardInterrupt:
+        console.print("\n[dim]Web Dashboard stopped by user.[/dim]")
+
+
+def cmd_version(args: argparse.Namespace) -> None:
+    """Displays the active RedAgent version string.
+
+    Args:
+        args: Parsed command line arguments.
+    """
     print(f"RedAgent version {__version__}")
 
 
-def main():
+def cmd_update(args: argparse.Namespace) -> None:
+    """Checks for newer releases and initiates automated package upgrades.
+
+    Args:
+        args: Parsed command line arguments.
+    """
+    from redagent.core.updater import (
+        check_and_prompt_update,
+        get_cached_latest_version,
+        is_newer_version,
+    )
+    console.print(f"[dim]Checking for RedAgent updates (current: v{__version__})...[/dim]")
+    latest = get_cached_latest_version(force=True)
+    if not latest:
+        console.print("[yellow]Unable to fetch latest release information. Please check network connection.[/yellow]")
+        return
+    if is_newer_version(__version__, latest):
+        check_and_prompt_update(force=True)
+    else:
+        console.print(f"[bold green][OK] RedAgent is up to date (v{__version__}).[/bold green]")
+
+
+def main() -> None:
+    """Entry point for the RedAgent CLI command processor."""
     parser = argparse.ArgumentParser(
         prog="redagent",
         description="RedAgent: Automated AI Agent Red Teaming & Security Auditing Platform",
@@ -261,12 +366,12 @@ def main():
     # Command: scan
     scan_parser = subparsers.add_parser("scan", help="Run automated security audit against a target AI agent")
     scan_parser.add_argument("--target", "-t", required=True, help="Path to target agent JSON configuration file")
-    scan_parser.add_argument("--output", "-o", help="Path to export audit report (e.g., report.md or report.json)")
+    scan_parser.add_argument("--output", "-o", help="Path to export audit report (e.g., report.html, report.md, or report.json)")
     scan_parser.add_argument(
         "--format",
-        choices=["auto", "json", "markdown"],
+        choices=["auto", "json", "markdown", "html"],
         default="auto",
-        help="Report export format: auto (by file extension), json, or markdown",
+        help="Report export format: auto (by file extension), html, markdown, or json",
     )
     scan_parser.add_argument(
         "--authorized",
@@ -274,6 +379,16 @@ def main():
         help="Optional compliance flag recording explicit test authorization in audit logs.",
     )
     scan_parser.set_defaults(func=cmd_scan)
+
+    # Command: ui
+    ui_parser = subparsers.add_parser("ui", help="Launch the interactive Web UI dashboard (Streamlit)")
+    ui_parser.add_argument("--port", "-p", type=int, default=8501, help="Port to bind dashboard server (default: 8501)")
+    ui_parser.add_argument("--host", default="localhost", help="Host address to bind dashboard (default: localhost)")
+    ui_parser.set_defaults(func=cmd_ui)
+
+    # Command: update
+    update_parser = subparsers.add_parser("update", help="Check for and install RedAgent platform updates")
+    update_parser.set_defaults(func=cmd_update)
 
     # Command: demo
     demo_parser = subparsers.add_parser("demo", help="Run internal mock sandbox demonstration")
@@ -288,6 +403,14 @@ def main():
         print_banner()
         parser.print_help()
         sys.exit(0)
+
+    # Non-intrusive update notification for interactive terminal sessions
+    if args.command not in ("version", "update"):
+        try:
+            from redagent.core.updater import check_and_prompt_update
+            check_and_prompt_update()
+        except Exception:
+            pass
 
     args.func(args)
 

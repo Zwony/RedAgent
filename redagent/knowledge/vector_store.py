@@ -30,13 +30,23 @@ class VectorDocument(BaseModel):
 
 
 class SecurityVectorStore:
-    """Vector database client managing attack templates, test seeds, and OWASP rubrics.
-    
-    Seamlessly integrates with ChromaDB when installed, and provides a lightweight
-    in-memory lexical/semantic vector store fallback if ChromaDB is not installed.
+    """Persistent vector database client managing adversarial attack templates and seeds.
+
+    Seamlessly integrates with ChromaDB when available, providing an in-memory
+    lexical and semantic fallback index when running in zero-dependency environments.
+
+    Attributes:
+        collection_name: Identifier for the ChromaDB or memory vector collection.
+        persist_dir: Filesystem path for persistent database storage.
     """
 
     def __init__(self, collection_name: str = "redagent_vectors", persist_dir: Optional[str] = None):
+        """Initializes the security vector store client.
+
+        Args:
+            collection_name: Target vector collection identifier.
+            persist_dir: Directory path for ChromaDB SQLite persistence.
+        """
         self.collection_name = collection_name
         self.persist_dir = persist_dir or settings.CHROMADB_PATH
         self._memory_docs: List[VectorDocument] = []
@@ -57,11 +67,20 @@ class SecurityVectorStore:
         else:
             logger.info("ChromaDB not installed; using in-memory semantic vector store.")
 
-        # Seed with initial benchmark vectors
         self.seed_defaults()
 
     def seed_defaults(self) -> None:
-        """Populate vector store with default OWASP LLM seeds if empty."""
+        """Populates the vector store with default OWASP LLM attack benchmarks."""
+        if self._chroma_collection is not None:
+            try:
+                if self._chroma_collection.count() >= len(DEFAULT_SEEDS):
+                    return
+            except Exception:
+                pass
+
+        if self._memory_docs:
+            return
+
         docs = [
             VectorDocument(
                 id=s["id"],
@@ -75,7 +94,11 @@ class SecurityVectorStore:
         self.add_documents(docs)
 
     def add_documents(self, docs: List[VectorDocument]) -> None:
-        """Add documents to persistent vector database or memory index."""
+        """Indexes documents into the persistent ChromaDB collection or in-memory fallback.
+
+        Args:
+            docs: List of VectorDocument items containing content and category metadata.
+        """
         existing_ids = {d.id for d in self._memory_docs}
         for doc in docs:
             if doc.id not in existing_ids:
@@ -102,7 +125,14 @@ class SecurityVectorStore:
                 logger.error("Failed to upsert to ChromaDB", error=str(exc))
 
     def _tokenize(self, text: str) -> set[str]:
-        """Simple word tokenization for lexical search fallback."""
+        """Performs basic word tokenization for the lexical search fallback.
+
+        Args:
+            text: Raw input string.
+
+        Returns:
+            set[str]: Set of lowercase alphanumeric tokens.
+        """
         return set(re.findall(r"\w+", text.lower()))
 
     def search(
@@ -111,7 +141,16 @@ class SecurityVectorStore:
         top_k: int = 3,
         category: Optional[OWASPCategory] = None,
     ) -> List[VectorDocument]:
-        """Query vector database for similar attack patterns or test seeds."""
+        """Queries the vector store for semantic or lexical matches.
+
+        Args:
+            query: Search query text describing the targeted attack vector.
+            top_k: Maximum number of relevant documents to return.
+            category: Optional OWASPCategory filter constraint.
+
+        Returns:
+            List[VectorDocument]: Ranked matching adversarial vector documents.
+        """
         if self._chroma_collection is not None:
             try:
                 where_filter = {"category": category.value} if category else None
