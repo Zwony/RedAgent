@@ -128,6 +128,43 @@ def display_report(final_state: RedTeamState) -> None:
         console.print()
 
 
+def export_audit_report(
+    report: Any,
+    output_path: str,
+    report_format: str = "auto",
+) -> None:
+    """Exports an evaluated audit report to the requested filesystem destination.
+
+    Args:
+        report: Evaluated audit report model instance.
+        output_path: Destination file path.
+        report_format: Export format ('auto', 'json', 'markdown', or 'html').
+    """
+    out_lower = output_path.lower()
+    is_html = report_format == "html" or (
+        report_format == "auto" and out_lower.endswith(".html")
+    )
+    is_md = report_format == "markdown" or (
+        report_format == "auto" and (out_lower.endswith(".md") or out_lower.endswith(".markdown"))
+    )
+
+    if is_html:
+        html_content = report.to_html()
+        with open(output_path, "w", encoding="utf-8") as f:
+            f.write(html_content)
+        console.print(f"[bold green][OK] Standalone HTML audit report exported to: {output_path}[/bold green]\n")
+    elif is_md:
+        md_content = report.to_markdown()
+        with open(output_path, "w", encoding="utf-8") as f:
+            f.write(md_content)
+        console.print(f"[bold green][OK] Markdown audit report exported to: {output_path}[/bold green]\n")
+    else:
+        report_data = report.model_dump(mode="json")
+        with open(output_path, "w", encoding="utf-8") as f:
+            json.dump(report_data, f, indent=2, ensure_ascii=False)
+        console.print(f"[bold green][OK] JSON audit report exported to: {output_path}[/bold green]\n")
+
+
 async def run_scan_async(
     target: TargetInfo,
     output_path: Optional[str] = None,
@@ -148,29 +185,7 @@ async def run_scan_async(
     display_report(final_state)
 
     if output_path and final_state.audit_report:
-        out_lower = output_path.lower()
-        is_html = report_format == "html" or (
-            report_format == "auto" and out_lower.endswith(".html")
-        )
-        is_md = report_format == "markdown" or (
-            report_format == "auto" and (out_lower.endswith(".md") or out_lower.endswith(".markdown"))
-        )
-
-        if is_html:
-            html_content = final_state.audit_report.to_html()
-            with open(output_path, "w", encoding="utf-8") as f:
-                f.write(html_content)
-            console.print(f"[bold green][OK] Standalone HTML audit report exported to: {output_path}[/bold green]\n")
-        elif is_md:
-            md_content = final_state.audit_report.to_markdown()
-            with open(output_path, "w", encoding="utf-8") as f:
-                f.write(md_content)
-            console.print(f"[bold green][OK] Markdown audit report exported to: {output_path}[/bold green]\n")
-        else:
-            report_data = final_state.audit_report.model_dump(mode="json")
-            with open(output_path, "w", encoding="utf-8") as f:
-                json.dump(report_data, f, indent=2, ensure_ascii=False)
-            console.print(f"[bold green][OK] JSON audit report exported to: {output_path}[/bold green]\n")
+        export_audit_report(final_state.audit_report, output_path, report_format)
 
     return final_state
 
